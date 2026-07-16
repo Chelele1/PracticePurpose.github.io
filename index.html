@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#163f2d"><link rel="manifest" href="manifest.webmanifest">
+<title>Short Game Test</title>
+<style>
+:root{--green:#163f2d;--light:#edf4ef;--gold:#c7a54b;--ink:#17211b;--muted:#68736c;--line:#d7dfda;--red:#a33131}*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f7f5;color:var(--ink)}header{position:sticky;top:0;z-index:3;background:var(--green);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 14px;box-shadow:0 2px 10px #0003}header h1{font-size:21px;margin:0}header p{font-size:12px;margin:4px 0 0;opacity:.85}.wrap{max-width:760px;margin:auto;padding:14px 12px 110px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;margin:12px 0;overflow:hidden;box-shadow:0 2px 8px #173b2610}.card-head{display:flex;justify-content:space-between;align-items:center;padding:14px 15px;background:var(--light)}.card-head h2{font-size:18px;margin:0}.score{font-weight:800;font-size:18px;color:var(--green)}.meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}.meta label:first-child{grid-column:1/-1}label span,.small{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}input,select{width:100%;font-size:16px;border:1px solid #bac5bd;border-radius:10px;padding:10px;background:#fff}input:focus{outline:3px solid #c7a54b55;border-color:var(--gold)}.row{padding:11px 14px;border-top:1px solid #edf0ee}.row-top{display:grid;grid-template-columns:1fr 70px 75px;gap:8px;align-items:center;margin-bottom:8px}.row-title{font-weight:700}.badge{font-size:12px;text-align:center;background:#f1f3f1;border-radius:7px;padding:5px}.attempts{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.attempts.four{grid-template-columns:repeat(4,1fr)}.attempts input{text-align:center;padding:9px 3px}.attempts input.good-shot{color:var(--red);font-weight:800;border-color:var(--red);background:#fff5f5}.help{padding:0 14px 13px;font-size:12px;color:var(--muted);line-height:1.4}.summary{padding:16px}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.kpi{background:var(--light);border-radius:12px;padding:12px;text-align:center}.kpi b{display:block;font-size:21px;color:var(--green)}.actions{position:fixed;bottom:0;left:0;right:0;background:#ffffffee;backdrop-filter:blur(10px);padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;border-top:1px solid var(--line);z-index:5}.actions button{flex:1;border:0;border-radius:11px;padding:12px 8px;font-size:14px;font-weight:700}.primary{background:var(--green);color:#fff}.secondary{background:#e8ede9;color:var(--ink)}.danger{background:#f5e6e6;color:var(--red)}details{border-top:1px solid var(--line);padding:12px 15px}summary{font-weight:700;cursor:pointer}.history-item{padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}.history-item button{border:0;border-radius:7px;padding:5px 8px}.note{font-size:12px;color:var(--muted);padding:10px 15px}.complete{color:var(--green)}.incomplete{color:var(--red)}@media(max-width:420px){.row-top{grid-template-columns:1fr 62px 66px}.kpi b{font-size:18px}.actions button{font-size:12px}.attempts{gap:5px}}
+</style></head><body>
+<header><h1>Short Game Test</h1><p>Enter results. Scores and estimated handicap update automatically.</p></header>
+<main class="wrap">
+<section class="card"><div class="meta"><label><span>Player</span><input id="player" placeholder="Player name"></label><label><span>Date</span><input id="date" type="date"></label><label><span>Location / Notes</span><input id="notes" placeholder="Course or practice area"></label></div></section>
+<div id="tests"></div>
+<section class="card"><div class="card-head"><h2>Results</h2><span id="status" class="incomplete">Incomplete</span></div><div class="summary"><div class="kpis"><div class="kpi"><b id="totalPoints">—</b><span class="small">Total points</span></div><div class="kpi"><b id="avgProx">—</b><span class="small">Avg proximity</span></div><div class="kpi"><b id="handicap">—</b><span class="small">Est. handicap</span></div></div></div><details><summary>Saved tests</summary><div id="history"></div></details></section>
+<section class="card"><details><summary>How to use the test</summary><div class="note">For wedges, sand, pitches, chips and trouble shots, enter the distance from the target for each of five attempts. A point is earned when the result is at or inside the stated “Leave it at” distance. For short putting, enter the number holed out of four balls. For lag putting, enter the point value earned on each attempt according to the original test setup. The app applies the scoring brackets from the workbook and stores data only on this device unless you export it.</div></details></section>
+</main>
+<div class="actions"><button class="primary" id="save">Save test</button><button class="secondary" id="export">Export CSV</button><button class="danger" id="reset">Clear</button></div>
+<script>
+const categories=[
+ {id:'wedges',name:'Wedges',kind:'proximity',rows:[[30,6],[45,6],[60,9],[75,9],[90,9]],pointsMap:{25:-7,24:-7,23:-7,22:-6,21:-6,20:-5,19:-5,18:-4,17:-3,16:-3,15:-2,14:-1,13:0,12:1,11:2,10:3,9:4,8:6,7:8,6:10,5:12,4:15,3:18,2:24,1:32,0:40},avgMap:{5:-7,6:-5,7:-3,8:-1,9:1,10:3,11:5,12:7,13:9,14:11,15:13,16:15,17:17,18:19,19:21,20:23,21:24,22:25,23:26,24:28,25:30,26:32,27:32,28:34,29:34,30:36,31:36,32:38,33:38,34:40,35:40,36:42,37:42,38:44,39:44,40:46}},
+ {id:'sand',name:'Sand',kind:'proximity',rows:[[20,4],[40,6],[60,8]],pointsMap:{15:-6,14:-5,13:-4,12:-3,11:-2,10:-1,9:0,8:2,7:4,6:6,5:8,4:10,3:16,2:24,1:32,0:40},avgMap:{2:-7,3:-5,4:-3,5:-1,6:0,7:1,8:2,9:4,10:6,11:8,12:10,13:12,14:14,15:17,16:20,17:23,18:25,19:27,20:29,21:31,22:33,23:35,24:37,25:39,26:41,27:43,28:45,29:47,30:49}},
+ {id:'pitches',name:'Pitches',kind:'proximity',rows:[[50,5],[75,7.5]],pointsMap:{10:-6,9:-4,8:-2,7:0,6:2,5:5,4:9,3:15,2:22,1:30,0:42},avgMap:{3:-7,4:-5,5:-3,6:-1,7:1,8:3,9:5,10:7,11:9,12:11,13:13,14:15,15:17,16:21,17:25,18:29,19:31,20:33,21:35,22:37,23:39,24:41,25:43,26:45,27:47,28:49,29:51}},
+ {id:'chips',name:'Chips',kind:'proximityHalf',rows:[[40,4],[60,6]],pointsMap:{10:-5,9:-3,8:0,7:3,6:7,5:12,4:16,3:21,2:30,1:40,0:50},avgMap:{1.5:-7,2:-5,2.5:-3,3:-1,3.5:1,4:2,4.5:4,5:6,5.5:7,6:9,6.5:10,7:12,7.5:14,8:16,8.5:20,9:24,9.5:25,10:26,10.5:27,11:28,11.5:29,12:30,13:32,14:34,15:37,16:40,17:45,18:50}},
+ {id:'trouble',name:'Trouble',kind:'proximity',rows:[['Line 1',15],['Line 2',15]],pointsMap:{5:-4,4:-2,3:2,2:10,1:18,0:36},avgMap:{3:-6,4:-4,5:-1,6:2,7:4,8:7,9:10,10:14,11:16,12:18,13:20,14:22,15:24,16:26,17:28,18:31,19:34,20:37,21:39,22:42,23:45}},
+ {id:'putting',name:'Putting',kind:'made',rows:[[3,'Holed'],[4,'Holed'],[5,'Holed'],[6,'Holed'],[9,'Holed']],pointsMap:{20:-7,19:-6,18:-5,17:-4,16:-2,15:0,14:2,13:4,12:7,11:12,10:15,9:20,8:25,7:32,6:36,5:40,4:45,3:50}},
+ {id:'lag',name:'Lag Putting',kind:'lag',rows:[[20,'Half a club'],[40,'Club length'],[60,'Club length']],pointsMap:{15:-6,14:-5,13:-4,12:-3,11:-1,10:1,9:4,8:7,7:10,6:13,5:16,4:19,3:22,2:26,1:30,0:40}}
+];
+const overallPoints={80:-7,79:-7,78:-7,77:-6,76:-6,75:-6,74:-5,73:-5,72:-5,71:-4,70:-4,69:-4,68:-3,67:-3,66:-3,65:-2,64:-2,63:-2,62:-1,61:-1,60:-1,59:0,58:0,57:0,56:1,55:1,54:1,53:2,52:2,51:2,50:3,49:3,48:4,47:4,46:5,45:5,44:6,43:6,42:7,41:8,40:9,39:10,38:11,37:12,36:13,35:14,34:15,33:16,32:17,31:18,30:19,29:20,28:21,27:22,26:23,25:24,24:25,23:26,22:27,21:28,20:30,19:32,18:34,17:36,16:38,15:40,14:42,13:44,12:46,11:48};
+const overallAvg={4:-7,5:-5,6:-3,7:-1,8:1,9:3,10:5,11:7,12:9,13:11,14:13,15:15,16:17,17:19,18:21,19:23,20:25,21:27,22:29,23:31,24:33,25:35,26:37,27:39,28:41,29:43,30:45,31:47,32:49};
+const tests=document.querySelector('#tests');
+function rowDisplay(c,r){
+  if(c.id==='wedges') return {title:`${r[0]} yds`,badge:`Leave it at ${r[1]} ft`};
+  if(c.id==='sand'){
+    const yards={20:7,40:13,60:20}[r[0]];
+    return {title:`${r[0]} ft / ${yards} yds`,badge:`Leave it at ${r[1]} ft`};
+  }
+  if(c.id==='pitches'){
+    const yards={50:16,75:25}[r[0]];
+    return {title:`${r[0]} ft / ${yards} yds`,badge:`Leave it at ${r[1]} ft`};
+  }
+  if(c.id==='chips'){
+    const yards={40:13,60:20}[r[0]];
+    return {title:`${r[0]} ft / ${yards} yds`,badge:`Leave it at ${r[1]} ft`};
+  }
+  if(c.id==='trouble') return {title:r[0],badge:'Within 15% total distance'};
+  if(c.id==='putting') return {title:`${r[0]} ft`,badge:'Holed'};
+  if(c.id==='lag'){
+    const yards={20:7,40:13,60:20}[r[0]];
+    return {title:`${r[0]} ft / ${yards} yds`,badge:r[1]};
+  }
+  return {title:String(r[0]),badge:String(r[1])};
+}
+function render(){tests.innerHTML='';categories.forEach(c=>{let html=`<section class="card" id="card-${c.id}"><div class="card-head"><h2>${c.name}</h2><span class="score" id="score-${c.id}">—</span></div>`;c.rows.forEach((r,ri)=>{const count=c.kind==='made'?1:5; const display=rowDisplay(c,r);html+=`<div class="row"><div class="row-top"><div class="row-title">${display.title}</div><div class="badge">${display.badge}</div><div class="badge" id="row-${c.id}-${ri}">—</div></div><div class="attempts ${count===4?'four':''}">`;for(let i=0;i<count;i++)html+=`<input type="number" min="0" step="0.5" inputmode="decimal" aria-label="${c.name} ${display.title} result ${i+1}" data-c="${c.id}" data-r="${ri}" data-i="${i}">`;html+=`</div></div>`});let help='';if(c.id==='trouble')help='Enter the proximity for each trouble shot. A point is earned when the result is within 15% of the total shot distance.';else if(c.kind==='proximity'||c.kind==='proximityHalf')help='Enter the distance from the target for each of 5 shots.';else if(c.kind==='made')help='Enter how many of 4 putts were holed.';else help='Enter the point value for each of 5 lag putts.';html+=`<div class="help">${help}</div></section>`;tests.insertAdjacentHTML('beforeend',html)});document.querySelectorAll('input[data-c]').forEach(x=>x.addEventListener('input',calculate));}
+const val=(c,r,i)=>{const e=document.querySelector(`[data-c="${c}"][data-r="${r}"][data-i="${i}"]`);return e&&e.value!==''?Number(e.value):null};
+function lookup(map,key){return Object.prototype.hasOwnProperty.call(map,String(key))?map[key]:null}
+function markGoodShots(){
+  document.querySelectorAll('input[data-c]').forEach(e=>{
+    const c=categories.find(x=>x.id===e.dataset.c);
+    const r=c?.rows[Number(e.dataset.r)];
+    const x=e.value===''?null:Number(e.value);
+    let good=false;
+    if(x!==null && c && r){
+      if(c.kind==='proximity'||c.kind==='proximityHalf') good=x<=Number(r[1]);
+      else if(c.kind==='made') good=x>0;
+      else if(c.kind==='lag') good=x>0;
+    }
+    e.classList.toggle('good-shot',good);
+  });
+}
+function calculate(){markGoodShots();let totalPts=0,distSum=0,distCount=0,complete=true;categories.forEach(c=>{let pts=0,catDist=0,catN=0,catComplete=true;c.rows.forEach((r,ri)=>{if(c.kind==='made'){let x=val(c.id,ri,0);if(x===null){catComplete=false;document.querySelector(`#row-${c.id}-${ri}`).textContent='—'}else{pts+=x;document.querySelector(`#row-${c.id}-${ri}`).textContent=`${x}/4`}}else{let rowPts=0;for(let i=0;i<5;i++){let x=val(c.id,ri,i);if(x===null){catComplete=false;continue} if(c.kind==='lag'){rowPts+=x}else{catDist+=x;catN++;distSum+=x;distCount++;if(x<=Number(r[1]))rowPts++}}pts+=rowPts;document.querySelector(`#row-${c.id}-${ri}`).textContent=catComplete||rowPts?`${rowPts} pt`:'—'}});let score=null;if(catComplete){if(c.kind==='made'||c.kind==='lag')score=lookup(c.pointsMap,pts);else{let avg=catDist/catN;let rounded=c.kind==='proximityHalf'?Math.round(avg*2)/2:Math.round(avg);score=(lookup(c.pointsMap,pts)+lookup(c.avgMap,rounded))/2}totalPts+=pts}else complete=false;document.querySelector(`#score-${c.id}`).textContent=score===null?'—':score.toFixed(1);});document.querySelector('#totalPoints').textContent=complete?totalPts:'—';document.querySelector('#avgProx').textContent=distCount?`${(distSum/distCount).toFixed(1)}`:'—';let hc=null;if(complete){const a=lookup(overallPoints,totalPts),b=lookup(overallAvg,Math.round(distSum/distCount));if(a!==null&&b!==null)hc=(a+b)/2}document.querySelector('#handicap').textContent=hc===null?'—':hc.toFixed(1);const st=document.querySelector('#status');st.textContent=complete?'Complete':'Incomplete';st.className=complete?'complete':'incomplete';autosave();return {complete,totalPts,avg:distCount?distSum/distCount:null,handicap:hc}}
+function snapshot(){const data={player:player.value,date:date.value,notes:notes.value,values:{}};document.querySelectorAll('input[data-c]').forEach(e=>data.values[`${e.dataset.c}.${e.dataset.r}.${e.dataset.i}`]=e.value);return data}
+function load(d){if(!d)return;player.value=d.player||'';date.value=d.date||'';notes.value=d.notes||'';Object.entries(d.values||{}).forEach(([k,v])=>{const [c,r,i]=k.split('.');const e=document.querySelector(`[data-c="${c}"][data-r="${r}"][data-i="${i}"]`);if(e)e.value=v});calculate()}
+function autosave(){localStorage.setItem('sg-current',JSON.stringify(snapshot()))}
+[player,date,notes].forEach(e=>e.addEventListener('input',autosave));
+document.querySelector('#save').onclick=()=>{const result=calculate(),d=snapshot();d.result=result;d.savedAt=new Date().toISOString();const h=JSON.parse(localStorage.getItem('sg-history')||'[]');h.unshift(d);localStorage.setItem('sg-history',JSON.stringify(h.slice(0,30)));renderHistory();alert('Test saved on this device.')};
+document.querySelector('#reset').onclick=()=>{if(confirm('Clear all entries for this test?')){document.querySelectorAll('input').forEach(e=>e.value='');date.value=new Date().toISOString().slice(0,10);localStorage.removeItem('sg-current');calculate()}};
+document.querySelector('#export').onclick=()=>{const d=snapshot(),r=calculate();let rows=[['Player',d.player],['Date',d.date],['Notes',d.notes],['Total points',r.totalPts??''],['Average proximity',r.avg??''],['Estimated handicap',r.handicap??''],[],['Skill','Distance/Shot','Attempt','Result']];categories.forEach(c=>c.rows.forEach((row,ri)=>{const n=c.kind==='made'?1:5;for(let i=0;i<n;i++)rows.push([c.name,row[0],i+1,val(c.id,ri,i)??''])}));const csv=rows.map(x=>x.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`short-game-${d.player||'test'}-${d.date||'date'}.csv`;a.click();URL.revokeObjectURL(a.href)};
+function renderHistory(){const h=JSON.parse(localStorage.getItem('sg-history')||'[]');history.innerHTML=h.length?'':'<p class="note">No saved tests yet.</p>';h.forEach((d,i)=>{const el=document.createElement('div');el.className='history-item';el.innerHTML=`<div><b>${d.player||'Unnamed player'}</b><div class="small">${d.date||''} • Handicap ${d.result?.handicap?.toFixed?.(1)??'—'}</div></div><div><button data-load="${i}">Open</button> <button data-del="${i}">Delete</button></div>`;history.appendChild(el)});history.querySelectorAll('[data-load]').forEach(b=>b.onclick=()=>load(h[b.dataset.load]));history.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{h.splice(b.dataset.del,1);localStorage.setItem('sg-history',JSON.stringify(h));renderHistory()})}
+render();date.value=new Date().toISOString().slice(0,10);load(JSON.parse(localStorage.getItem('sg-current')||'null'));renderHistory();calculate();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
+</script></body></html>
